@@ -1,6 +1,6 @@
 # Phlow
 
-TODO: Write a gem description
+Git-flow is awesome, this gem is just enhancing the workflow to make it work with CI tools like Teamcity, Jenkins, etc. Gem includes bunch of command line wrapper utilities around Git.
 
 ## Installation
 
