@@ -1,5 +1,40 @@
 #!/usr/bin/env ruby
 
-require 'phlow'
+require "phlow"
 
-puts "hello"
+def print_usage
+   puts <<USAGE
+
+Phlow v#{Phlow::VERSION}, your cute little Git workflow..
+
+init                    = Initialize a new repository with the default branches
+clone <url>             = Clones a Phlow-ready repository
+branch <feature>        = Creates a new feature/bug branch with the given name
+sync                    = Syncs current branch with other users (pull & push)
+signoff <feature>       = Signs off to the given feature
+version                 = Displays the version information
+help                    = Displays this screen
+USAGE
+
+end
+
+if ARGV.first
+   command, arg = ARGV.first, (ARGV.last unless ARGV.first == ARGV.last)
+
+   case command
+      when "init"
+         Phlow::init_repository
+      when "clone"
+         Phlow::clone_repository arg
+      when "branch"
+         Phlow::branch arg
+      when "sync"
+         Phlow::sync
+      when "signoff"
+         Phlow::signoff
+      when "version"
+         puts "Phlow, v#{Phlow::VERSION}"
+      else
+         print_usage
+   end
+end

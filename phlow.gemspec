@@ -15,6 +15,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Phlow::VERSION
 
-  gem.add_dependency("choice")
   gem.add_development_dependency('rspec')
 end
