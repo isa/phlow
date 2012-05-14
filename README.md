@@ -1,6 +1,6 @@
 # Phlow
 
-Git-flow is awesome, this gem is just enhancing the workflow to make it work with CI tools like Teamcity, Jenkins, etc. Gem includes bunch of command line wrapper utilities around Git.
+Feature branching is awesome, but it has issues.. This gem is just aiming to enhance it by creating a workflow around it to make it even work with CI tools like Teamcity, Jenkins, etc. Gem includes a command line wrapper utility around Git.
 
 ## Installation
 
@@ -18,7 +18,9 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Just type:
+
+    $ phlow help
 
 ## Contributing
 

@@ -43,26 +43,103 @@ LICENSE
       result = `git add -A && git commit -m 'First commit'`
 
       puts "Creating necessary branches..."
-      result = `git checkout -b development &> /dev/null`
-      result = `git checkout -b master &> /dev/null`
       result = `git remote add origin #{repo}`
       result = `git push -u origin master &> /dev/null`
-      result = `git push -u origin development &> /dev/null`
+      create_remote_branch 'development'
+      create_remote_branch 'operational'
+      create_remote_branch 'qa'
+      result = `git checkout master &> /dev/null`
 
-      puts "Initialization is done!"
+      puts "Done!"
    end
 
    def self.clone_repository(url)
-      `git clone #{url}`
+      if repo.nil?
+         puts "Oops! Please specify a the central repository url!"
+         exit 1
+      end
+
+      puts "Cloning the repository..."
+      result = `git clone #{url}`
+      result = `git checkout master &> /dev/null`
+
+      puts "Done!"
    end
 
    def self.branch(feature)
-      `git checkout -b #{feature} master`
+      puts "Creating..."
+      result = `git pull &> /dev/null`
+      result = `git checkout -b #{feature} master &> /dev/null`
+
+      puts "#{feature} is ready for you to work on!"
    end
 
-   def self.sync
+   def self.sync(action)
+      puts "Syncing.."
+      result = `git status -s`
+
+      if not result.nil?
+         puts "Please commit your changes first!"
+         exit 1
+      end
+
+      feature = `echo $(git branch | grep "*" | sed "s/* //")`
+
+      # if there is no branch, it should just do the safe sync
+      if action.nil?
+         puts "Applying remote changes to the #{feature} branch..."
+         result = `git rebase master #{feature}`
+         if not $?.success?
+            puts result
+            exit 1
+         end
+
+         puts "Sending current changes..."
+         result = `git checkout development &> /dev/null`
+         result = `git pull`
+         result = `git merge --squash #{feature}`
+         if not $?.success?
+            puts result
+            exit 1
+         end
+
+         result = `git add -A . &> /dev/null`
+         result = `git commit . -m '#{feature} syncing..' &> /dev/null`
+         result = `git push -u origin development`
+         result = `git checkout #{feature} &> /dev/null`
+         # maybe a operational branch sync with dev and master here too..
+         # what about qa branch
+      end
    end
 
-   def self.signoff
+   def self.signoff(feature)
+      puts "Signing off #{feature}..."
+      print "Signee: "
+      signee = STDIN.gets.chomp
+
+      if signee.length < 5
+         puts "Please enter a valid name!"
+         exit 1
+      end
+
+      # operational and qa has to go first
+      result = `git checkout master &> /dev/null`
+      result = `git pull &> /dev/null`
+      result = `git rebase master #{feature}`
+      result = `git merge --no-ff #{feature}`
+      if not $?.success?
+         puts result
+         exit 1
+      end
+
+      result = `git push -u origin master`
+   end
+
+   private
+
+   def self.create_remote_branch(name)
+      result = `git checkout -b #{name} master &> /dev/null`
+      result = `git push -u origin #{name} &> /dev/null`
+      result = `git branch -d #{name} &> /dev/null`
    end
 end
