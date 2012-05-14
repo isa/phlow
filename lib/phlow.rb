@@ -103,12 +103,12 @@ LICENSE
             exit 1
          end
 
-         result = `git add -A . &> /dev/null`
          result = `git commit . -m '#{feature} syncing..' &> /dev/null`
+
+         sync_with_operational_branches 'development'
+
          result = `git push -u origin development`
          result = `git checkout #{feature} &> /dev/null`
-         # maybe a operational branch sync with dev and master here too..
-         # what about qa branch
       end
    end
 
@@ -125,14 +125,28 @@ LICENSE
       result = `git checkout master &> /dev/null`
       result = `git pull &> /dev/null`
       result = `git rebase master #{feature}`
-      result = `git merge --no-ff #{feature}`
+      result = `git merge --no-ff #{feature} -m '#{feature} is signed off by #{signee}`
       if not $?.success?
          puts result
          exit 1
       end
 
+      sync_with_operational_branches 'master'
+      result = `git push -u origin master`
+   end
+
+   private
+
+   def self.create_remote_branch(name)
+      result = `git checkout -b #{name} master &> /dev/null`
+      result = `git push -u origin #{name} &> /dev/null`
+      result = `git branch -d #{name} &> /dev/null`
+   end
+
+   def self.sync_with_operational_branches(branch)
       result = `git pull origin &> /dev/null`
-      result = `git checkout master &> /dev/null`
+
+      result = `git checkout #{branch} &> /dev/null`
       result = `git merge --no-ff operational`
       if not $?.success?
          puts result
@@ -144,15 +158,6 @@ LICENSE
          puts result
          exit 1
       end
-
-      result = `git push -u origin master`
    end
 
-   private
-
-   def self.create_remote_branch(name)
-      result = `git checkout -b #{name} master &> /dev/null`
-      result = `git push -u origin #{name} &> /dev/null`
-      result = `git branch -d #{name} &> /dev/null`
-   end
 end
