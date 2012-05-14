@@ -8,8 +8,7 @@ def print_usage
 Phlow v#{Phlow::VERSION}, your cute little Git workflow..
 
    init <remote-repo>      = Initialize a new repository with the default setup for given remote repository
-   clone <url>             = Clones a Phlow-ready repository
-   branch <feature>        = Creates a new feature/bug branch with the given name
+   new <feature>           = Creates a new feature/bug branch with the given name
    sync [continue|abort]   = Syncs current branch with other users (pull & push)
    signoff <feature>       = Signs off to the given feature
    version                 = Displays the version information
@@ -31,12 +30,10 @@ if ARGV.first
    case command
       when "init"
          Phlow::init_repository arg
-      when "clone"
-         Phlow::clone_repository arg
-      when "branch"
-         Phlow::branch arg
+      when "new"
+         Phlow::new_topic arg
       when "sync"
-         Phlow::sync
+         Phlow::sync arg
       when "signoff"
          Phlow::signoff arg
       when "version"

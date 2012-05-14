@@ -34,16 +34,17 @@ LICENSE
       end
 
       puts "Initializing the repo..."
-      result = `git init`
+      result = `git clone #{repo} .`
 
-      puts "Creating a license file..."
-      File.open('LICENSE', 'w') {|f| f.write(LICENSE) }
+      if not File.exists?("LICENSE")
+         puts "Creating a license file..."
+         File.open("LICENSE", "w") {|f| f.write(LICENSE) }
 
-      puts "Committing for the first time..."
-      result = `git add -A && git commit -m 'First commit'`
+         puts "Committing for the first time..."
+         result = `git add -A && git commit -m 'First commit'`
+      end
 
       puts "Creating necessary branches..."
-      result = `git remote add origin #{repo}`
       result = `git push -u origin master &> /dev/null`
       create_remote_branch 'development'
       create_remote_branch 'operational'
@@ -53,32 +54,19 @@ LICENSE
       puts "Done!"
    end
 
-   def self.clone_repository(url)
-      if repo.nil?
-         puts "Oops! Please specify a the central repository url!"
-         exit 1
-      end
-
-      puts "Cloning the repository..."
-      result = `git clone #{url}`
-      result = `git checkout master &> /dev/null`
-
-      puts "Done!"
-   end
-
-   def self.branch(feature)
+   def self.new_topic(topic)
       puts "Creating..."
       result = `git pull &> /dev/null`
-      result = `git checkout -b #{feature} master &> /dev/null`
+      result = `git checkout -b #{topic} master &> /dev/null`
 
-      puts "#{feature} is ready for you to work on!"
+      puts "#{topic} is ready for you to work on!"
    end
 
    def self.sync(action)
       puts "Syncing.."
       result = `git status -s`
 
-      if not result.nil?
+      if result.nil?
          puts "Please commit your changes first!"
          exit 1
       end
@@ -140,11 +128,17 @@ LICENSE
    def self.create_remote_branch(name)
       result = `git checkout -b #{name} master &> /dev/null`
       result = `git push -u origin #{name} &> /dev/null`
-      result = `git branch -d #{name} &> /dev/null`
+
+      if not $?.success?
+         result = `git pull &> /dev/null`
+         result = `git branch #{name} --set-upstream origin/#{name} &> /dev/null`
+      end
    end
 
    def self.sync_with_operational_branches(branch)
       result = `git pull origin &> /dev/null`
+      result = `git checkout operational &> /dev/null`
+      result = `git checkout qa &> /dev/null`
 
       result = `git checkout #{branch} &> /dev/null`
       result = `git merge --no-ff operational`
