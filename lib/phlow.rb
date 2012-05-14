@@ -122,11 +122,24 @@ LICENSE
          exit 1
       end
 
-      # operational and qa has to go first
       result = `git checkout master &> /dev/null`
       result = `git pull &> /dev/null`
       result = `git rebase master #{feature}`
       result = `git merge --no-ff #{feature}`
+      if not $?.success?
+         puts result
+         exit 1
+      end
+
+      result = `git pull origin &> /dev/null`
+      result = `git checkout master &> /dev/null`
+      result = `git merge --no-ff operational`
+      if not $?.success?
+         puts result
+         exit 1
+      end
+
+      result = `git merge --no-ff qa`
       if not $?.success?
          puts result
          exit 1
