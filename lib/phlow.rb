@@ -33,8 +33,10 @@ LICENSE
          exit 1
       end
 
-      puts "Initializing the repo..."
-      result = `git clone #{repo} .`
+      if not File.exists?(".git")
+         puts "Initializing the repo..."
+         result = `git clone #{repo} .`
+      end
 
       if not File.exists?("LICENSE")
          puts "Creating a license file..."
@@ -101,26 +103,38 @@ LICENSE
    end
 
    def self.signoff(feature)
-      puts "Signing off #{feature}..."
-      print "Signee: "
-      signee = STDIN.gets.chomp
-
-      if signee.length < 5
-         puts "Please enter a valid name!"
+      if feature.nil?
+         puts "Please specify which feature you want to sign off!"
          exit 1
       end
 
-      result = `git checkout master &> /dev/null`
-      result = `git pull &> /dev/null`
-      result = `git rebase master #{feature}`
-      result = `git merge --no-ff #{feature} -m '#{feature} is signed off by #{signee}`
-      if not $?.success?
-         puts result
-         exit 1
-      end
+      print "Are you sure you want to sign off to #{feature}? Remember, this will delete the #{feature} [y/n]? "
+      answer = STDIN.gets.chomp
 
-      sync_with_operational_branches 'master'
-      result = `git push -u origin master`
+      if answer.downcase == 'y' or answer.downcase == 'yes'
+         puts "Signing off [ #{feature} ]..."
+         print "Signee: "
+         signee = STDIN.gets.chomp
+
+         if signee.length < 5
+            puts "Please enter a valid name!"
+            exit 1
+         end
+
+         result = `git checkout master &> /dev/null`
+         result = `git pull &> /dev/null`
+         result = `git rebase master #{feature}`
+         result = `git checkout master &> /dev/null`
+         result = `git merge --no-ff #{feature} -m '#{feature} is signed off by #{signee}'`
+         if not $?.success?
+            puts result
+            exit 1
+         end
+
+         sync_with_operational_branches 'master'
+         result = `git branch -d #{feature}`
+         result = `git push -u origin master`
+      end
    end
 
    private
